@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSarXiv.org - 中国社会科学预印本平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+        
+        :root {
+            --primary-color: #1a6cb3;
+            --secondary-color: #3498db;
+            --background-color: #f5f7fa;
+            --text-color: #2c3e50;
+            --border-color: #e0e6ed;
+            --highlight-bg-color: #cce0ff;
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo h1 {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .logo p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+        
+        nav ul li {
+            margin-left: 20px;
+        }
+        
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: opacity 0.3s;
+        }
+        
+        nav ul li a:hover {
+            opacity: 0.8;
+        }
+        
+        main {
+            padding: 40px 0;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .welcome-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .welcome-section p {
+            max-width: 800px;
+            margin: 0 auto;
+            font-size: 1.1rem;
+        }
+        
+        .search-section {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+        
+        .search-bar {
+            display: flex;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px 0 0 4px;
+            font-size: 1rem;
+        }
+        
+        .search-bar button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0 20px;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .search-bar button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .disciplines-section {
+            margin-bottom: 40px;
+        }
+        
+        .disciplines-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+        
+        .disciplines-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(354px, 1fr));
+            gap: 20px;
+        }
+        
+        /* 完全重构学科展示方式 */
+        .discipline-group {
+            margin-bottom: 10px; /* 学科组之间的间距 */
+        }
+        
+        /* 标题行始终显示 */
+        .discipline-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: border-radius 0.3s;
+        }
+        
+        .discipline-group.active .discipline-header {
+            border-radius: 8px 8px 0 0; /* 当激活时，只有顶部有圆角 */
+        }
+        
+        .discipline-header h4 {
+            font-size: 1.2rem;
+            margin: 0;
+        }
+        
+        .discipline-header .toggle-icon {
+            transition: transform 0.3s;
+        }
+        
+        .discipline-group.active .toggle-icon {
+            transform: rotate(90deg);
+        }
+        
+        /* 内容默认不显示 */
+        .discipline-content {
+            background-color: white;
+            overflow: hidden;
+            height: 0;
+            opacity: 0;
+            transition: height 0.3s ease-out, opacity 0.3s ease-out, margin-bottom 0.3s;
+            margin-bottom: 0;
+            border-left: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* 当激活时显示内容 */
+        .discipline-group.active .discipline-content {
+            height: auto;
+            opacity: 1;
+            margin-bottom: 15px; /* 展开后与下一个元素的距离 */
+        }
+        
+        /* 添加滚动条样式 */
+        .discipline-content.scrollable {
+            max-height: 354px;
+            overflow-y: auto;
+        }
+        
+        /* 自定义滚动条样式 */
+        .discipline-content.scrollable::-webkit-scrollbar {
+            width: 24px;
+        }
+        
+        .discipline-content.scrollable::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 0 0 8px 0;
+        }
+        
+        .discipline-content.scrollable::-webkit-scrollbar-thumb {
+            background: var(--highlight-bg-color);
+            border-radius: 4px;
+        }
+        
+        .discipline-content.scrollable::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+        
+        .subdiscipline {
+            display: flex;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .subdiscipline:last-child {
+            border-bottom: none;
+        }
+        
+        .subdiscipline-code {
+            width: 50px;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .subdiscipline-name {
+            flex: 1;
+        }
+        
+        .subdiscipline.highlight {
+            background-color: var(--highlight-bg-color);
+        }
+        
+        .subdiscipline.highlight .subdiscipline-code {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .subdiscipline.highlight .subdiscipline-name {
+            color: #000000;
+            font-weight: normal;
+        }
+        
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+        }
+        
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .footer-links a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+        
+        .footer-links a:hover {
+            opacity: 0.8;
+        }
+        
+        .footer-text {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav {
+                margin-top: 15px;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            nav ul li {
+                margin: 5px 10px;
+            }
+            
+            .disciplines-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-links {
+                flex-direction: column;
+            }
+            
+            .footer-links a {
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <div class="logo">
+                <h1>CSarXiv.org</h1>
+                <p>中国社会科学预印本平台</p>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#">首页</a></li>
+                    <li><a href="#">浏览</a></li>
+                    <li><a href="#">提交</a></li>
+                    <li><a href="#">关于</a></li>
+                    <li><a href="#">帮助</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container">
+        <section class="welcome-section">
+            <h2>欢迎访问 CSarXiv.org</h2>
+            <p>CSarXiv.org 是中国社会科学领域的开放获取预印本平台，旨在促进学术交流与创新。您可以在这里浏览最新研究成果，分享您的学术见解，参与跨学科讨论。</p>
+        </section>
+        
+        <section class="search-section">
+            <div class="search-bar">
+                <input type="text" placeholder="搜索论文标题、作者、关键词...">
+                <button>搜索</button>
+            </div>
+        </section>
+        
+        <section class="disciplines-section">
+            <h3>按社科基金项目申报代码字母顺序浏览</h3>
+            <div class="disciplines-container">
+                <!-- 按字母顺序排列学科 -->
+                
+                <!-- 党史、党建 (DJ) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>DJ - 党史·党建</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">DJA</div>
+                            <div class="subdiscipline-name">党史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">DJB</div>
+                            <div class="subdiscipline-name">党建</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">DJC</div>
+                            <div class="subdiscipline-name">党史·党建其他学科</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 法学 (FX) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>FX - 法学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">FXA</div>
+                            <div class="subdiscipline-name">理论法学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">FXB</div>
+                            <div class="subdiscipline-name">法律史学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">FXC</div>
+                            <div class="subdiscipline-name">部门法学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">FXD</div>
+                            <div class="subdiscipline-name">国际法学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">FXE</div>
+                            <div class="subdiscipline-name">法学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 区域国别学和国际问题研究 (GJ) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>GJ - 区域国别学和国际问题研究</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJA</div>
+                            <div class="subdiscipline-name">国际战略</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJB</div>
+                            <div class="subdiscipline-name">国际经济</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJC</div>
+                            <div class="subdiscipline-name">国际政治</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJD</div>
+                            <div class="subdiscipline-name">国际军事</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJE</div>
+                            <div class="subdiscipline-name">国际文化</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJF</div>
+                            <div class="subdiscipline-name">国际关系</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJG</div>
+                            <div class="subdiscipline-name">国际组织</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJH</div>
+                            <div class="subdiscipline-name">全球性问题</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJI</div>
+                            <div class="subdiscipline-name">国际问题综合研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJJ</div>
+                            <div class="subdiscipline-name">区域国别研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GJK</div>
+                            <div class="subdiscipline-name">国际问题研究其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 管理学 (GL) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>GL - 管理学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                       <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLA</div>
+                            <div class="subdiscipline-name">管理思想史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLB</div>
+                            <div class="subdiscipline-name">管理学理论与方法</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLC</div>
+                            <div class="subdiscipline-name">战略与决策管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLD</div>
+                            <div class="subdiscipline-name">组织行为管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLE</div>
+                            <div class="subdiscipline-name">企业理论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLF</div>
+                            <div class="subdiscipline-name">财务与会计管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLG</div>
+                            <div class="subdiscipline-name">人力资源管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLH</div>
+                            <div class="subdiscipline-name">生产与运作管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLI</div>
+                            <div class="subdiscipline-name">营销管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLJ</div>
+                            <div class="subdiscipline-name">国际商务管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLK</div>
+                            <div class="subdiscipline-name">创业与创新管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLL</div>
+                            <div class="subdiscipline-name">旅游管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLM</div>
+                            <div class="subdiscipline-name">财政金融管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLN</div>
+                            <div class="subdiscipline-name">农林经济管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLO</div>
+                            <div class="subdiscipline-name">资源环境管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLP</div>
+                            <div class="subdiscipline-name">劳动就业与社会保障管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLQ</div>
+                            <div class="subdiscipline-name">公共管理与公共政策</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLR</div>
+                            <div class="subdiscipline-name">国家安全研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLS</div>
+                            <div class="subdiscipline-name">公共安全与危机管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLT</div>
+                            <div class="subdiscipline-name">公共卫生管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLU</div>
+                            <div class="subdiscipline-name">公共服务管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLV</div>
+                            <div class="subdiscipline-name">电子商务和电子政务管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLW</div>
+                            <div class="subdiscipline-name">区域发展管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLX</div>
+                            <div class="subdiscipline-name">非政府组织管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLY</div>
+                            <div class="subdiscipline-name">文化艺术管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GLZ</div>
+                            <div class="subdiscipline-name">军事管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">GL&</div>
+                            <div class="subdiscipline-name">管理学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 经济学组 -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>JL/JY - 经济学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLA</div>
+                            <div class="subdiscipline-name">政治经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLB</div>
+                            <div class="subdiscipline-name">宏观经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLC</div>
+                            <div class="subdiscipline-name">微观经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLD</div>
+                            <div class="subdiscipline-name">比较经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLE</div>
+                            <div class="subdiscipline-name">发展经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLF</div>
+                            <div class="subdiscipline-name">生产力经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLG</div>
+                            <div class="subdiscipline-name">经济地理学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLH</div>
+                            <div class="subdiscipline-name">经济思想史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLI</div>
+                            <div class="subdiscipline-name">经济史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLJ</div>
+                            <div class="subdiscipline-name">世界经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLK</div>
+                            <div class="subdiscipline-name">国民经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLL</div>
+                            <div class="subdiscipline-name">区域经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">JLM</div>
+                            <div class="subdiscipline-name">经济理论其他学科</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYA</div>
+                            <div class="subdiscipline-name">管理经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYB</div>
+                            <div class="subdiscipline-name">数量经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYC</div>
+                            <div class="subdiscipline-name">会计学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYD</div>
+                            <div class="subdiscipline-name">审计学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYE</div>
+                            <div class="subdiscipline-name">技术经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYF</div>
+                            <div class="subdiscipline-name">生态经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYG</div>
+                            <div class="subdiscipline-name">劳动经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYH</div>
+                            <div class="subdiscipline-name">城市经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYI</div>
+                            <div class="subdiscipline-name">资源经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYJ</div>
+                            <div class="subdiscipline-name">环境经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYK</div>
+                            <div class="subdiscipline-name">物资经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYL</div>
+                            <div class="subdiscipline-name">工业经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYM</div>
+                            <div class="subdiscipline-name">农村经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYN</div>
+                            <div class="subdiscipline-name">农业经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYO</div>
+                            <div class="subdiscipline-name">交通经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYP</div>
+                            <div class="subdiscipline-name">建筑经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYQ</div>
+                            <div class="subdiscipline-name">商业经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYR</div>
+                            <div class="subdiscipline-name">价格学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYS</div>
+                            <div class="subdiscipline-name">旅游经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYT</div>
+                            <div class="subdiscipline-name">信息经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYU</div>
+                            <div class="subdiscipline-name">财政经济学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYV</div>
+                            <div class="subdiscipline-name">货币银行学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYW</div>
+                            <div class="subdiscipline-name">保险学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">JYX</div>
+                            <div class="subdiscipline-name">应用经济其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 考古学 (KG) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>KG - 考古学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KGA</div>
+                            <div class="subdiscipline-name">考古理论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KGB</div>
+                            <div class="subdiscipline-name">考古学史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KGC</div>
+                            <div class="subdiscipline-name">考古技术</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KGD</div>
+                            <div class="subdiscipline-name">中国考古</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KGE</div>
+                            <div class="subdiscipline-name">外国考古</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KGF</div>
+                            <div class="subdiscipline-name">专门考古</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KGG</div>
+                            <div class="subdiscipline-name">考古学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 马列·科社 (KS) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>KS - 马列·科社</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KSA</div>
+                            <div class="subdiscipline-name">马、恩、列、斯思想研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KSB</div>
+                            <div class="subdiscipline-name">毛泽东思想、邓小平理论研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KSC</div>
+                            <div class="subdiscipline-name">马克思主义思想史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KSD</div>
+                            <div class="subdiscipline-name">科学社会主义</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KSE</div>
+                            <div class="subdiscipline-name">社会主义运动史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KSF</div>
+                            <div class="subdiscipline-name">国外马克思主义研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KSG</div>
+                            <div class="subdiscipline-name">社会主义精神文明建设研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">KSH</div>
+                            <div class="subdiscipline-name">马列·科社其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 民族学 (MZ) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>MZ - 民族学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">MZA</div>
+                            <div class="subdiscipline-name">民族问题理论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">MZB</div>
+                            <div class="subdiscipline-name">民族史学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">MZC</div>
+                            <div class="subdiscipline-name">中国少数民族语言文字</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">MZD</div>
+                            <div class="subdiscipline-name">蒙古学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">MZE</div>
+                            <div class="subdiscipline-name">藏学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">MZF</div>
+                            <div class="subdiscipline-name">文化人类学与民俗学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">MZG</div>
+                            <div class="subdiscipline-name">世界民族研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">MZH</div>
+                            <div class="subdiscipline-name">民族问题研究其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 人口学 (RK) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>RK - 人口学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKA</div>
+                            <div class="subdiscipline-name">人口学原理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKB</div>
+                            <div class="subdiscipline-name">人口经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKC</div>
+                            <div class="subdiscipline-name">人口社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKD</div>
+                            <div class="subdiscipline-name">人口学说史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKE</div>
+                            <div class="subdiscipline-name">人口史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKF</div>
+                            <div class="subdiscipline-name">人口统计学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKG</div>
+                            <div class="subdiscipline-name">人口地理学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKH</div>
+                            <div class="subdiscipline-name">人口生态学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKI</div>
+                            <div class="subdiscipline-name">区域人口学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKJ</div>
+                            <div class="subdiscipline-name">人口系统工程</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKK</div>
+                            <div class="subdiscipline-name">人口预测学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKL</div>
+                            <div class="subdiscipline-name">人口规划学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKM</div>
+                            <div class="subdiscipline-name">人口政策学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKN</div>
+                            <div class="subdiscipline-name">计划生育学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">RKO</div>
+                            <div class="subdiscipline-name">人口学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 社会学 (SH) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>SH - 社会学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHA</div>
+                            <div class="subdiscipline-name">社会学史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHB</div>
+                            <div class="subdiscipline-name">社会学理论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHC</div>
+                            <div class="subdiscipline-name">社会学方法</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHD</div>
+                            <div class="subdiscipline-name">实验社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHE</div>
+                            <div class="subdiscipline-name">数理社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHF</div>
+                            <div class="subdiscipline-name">应用社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHG</div>
+                            <div class="subdiscipline-name">比较社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHH</div>
+                            <div class="subdiscipline-name">社会地理学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHI</div>
+                            <div class="subdiscipline-name">政治社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHJ</div>
+                            <div class="subdiscipline-name">文化社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHK</div>
+                            <div class="subdiscipline-name">历史社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHL</div>
+                            <div class="subdiscipline-name">科学社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHM</div>
+                            <div class="subdiscipline-name">经济社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHN</div>
+                            <div class="subdiscipline-name">军事社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHO</div>
+                            <div class="subdiscipline-name">社会心理学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHP</div>
+                            <div class="subdiscipline-name">公共关系学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHQ</div>
+                            <div class="subdiscipline-name">社会人类学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHR</div>
+                            <div class="subdiscipline-name">组织社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHS</div>
+                            <div class="subdiscipline-name">发展社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHT</div>
+                            <div class="subdiscipline-name">福利社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">SHU</div>
+                            <div class="subdiscipline-name">社会学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 世界历史/中国历史 (SS/ZS) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>SS/ZS - 历史学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZSA</div>
+                            <div class="subdiscipline-name">中国史学史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZSB</div>
+                            <div class="subdiscipline-name">中国史学理论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZSC</div>
+                            <div class="subdiscipline-name">历史文献学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZSD</div>
+                            <div class="subdiscipline-name">中国通史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZSE</div>
+                            <div class="subdiscipline-name">中国古代史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZSF</div>
+                            <div class="subdiscipline-name">中国近、现代史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZSG</div>
+                            <div class="subdiscipline-name">专门史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZSH</div>
+                            <div class="subdiscipline-name">中国历史其他学科</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSA</div>
+                            <div class="subdiscipline-name">世界史学史</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSB</div>
+                            <div class="subdiscipline-name">世界史学理论</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSC</div>
+                            <div class="subdiscipline-name">世界历史文献学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSD</div>
+                            <div class="subdiscipline-name">世界通史</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSE</div>
+                            <div class="subdiscipline-name">亚洲史</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSF</div>
+                            <div class="subdiscipline-name">非洲史</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSG</div>
+                            <div class="subdiscipline-name">美洲史</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSH</div>
+                            <div class="subdiscipline-name">欧洲史</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSI</div>
+                            <div class="subdiscipline-name">澳洲、大洋洲史</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSJ</div>
+                            <div class="subdiscipline-name">专门史</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">SSK</div>
+                            <div class="subdiscipline-name">世界历史其他学科</div>
+                        </div>
+
+                    </div>
+                </div>
+                
+                <!-- 统计学与图书情报学 (TJ) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>TJ - 统计学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJA</div>
+                            <div class="subdiscipline-name">统计学史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJB</div>
+                            <div class="subdiscipline-name">理论统计学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJD</div>
+                            <div class="subdiscipline-name">描述统计学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJE</div>
+                            <div class="subdiscipline-name">数理统计学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJF</div>
+                            <div class="subdiscipline-name">经济统计学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJG</div>
+                            <div class="subdiscipline-name">科学技术统计学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJH</div>
+                            <div class="subdiscipline-name">社会统计学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJI</div>
+                            <div class="subdiscipline-name">人口统计学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJJ</div>
+                            <div class="subdiscipline-name">环境与生态统计学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJK</div>
+                            <div class="subdiscipline-name">国际统计学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TJL</div>
+                            <div class="subdiscipline-name">统计学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 统计学与图书情报学 (TQ) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>TQ - 图书馆·情报与文献学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TQA</div>
+                            <div class="subdiscipline-name">图书馆学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TQB</div>
+                            <div class="subdiscipline-name">文献学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TQC</div>
+                            <div class="subdiscipline-name">情报学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TQD</div>
+                            <div class="subdiscipline-name">档案学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TQE</div>
+                            <div class="subdiscipline-name">博物馆学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TQF</div>
+                            <div class="subdiscipline-name">图书馆·情报与文献学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 体育学 (TY) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>TY - 体育学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYA</div>
+                            <div class="subdiscipline-name">体育哲学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYB</div>
+                            <div class="subdiscipline-name">体育理论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYC</div>
+                            <div class="subdiscipline-name">体育管理学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYD</div>
+                            <div class="subdiscipline-name">体育社会学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYE</div>
+                            <div class="subdiscipline-name">体育经济学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYF</div>
+                            <div class="subdiscipline-name">体育法学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYG</div>
+                            <div class="subdiscipline-name">学校体育学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYH</div>
+                            <div class="subdiscipline-name">社会体育学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYI</div>
+                            <div class="subdiscipline-name">竞技体育学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYJ</div>
+                            <div class="subdiscipline-name">体育史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">TYK</div>
+                            <div class="subdiscipline-name">体育学其它学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 外国文学/中国文学 (WW/ZW) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>WW/ZW - 文学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">WWA</div>
+                            <div class="subdiscipline-name">外国文学理论与方法论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">WWB</div>
+                            <div class="subdiscipline-name">比较文学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">WWC</div>
+                            <div class="subdiscipline-name">东方文学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">WWD</div>
+                            <div class="subdiscipline-name">俄苏文学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">WWE</div>
+                            <div class="subdiscipline-name">英美文学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">WWF</div>
+                            <div class="subdiscipline-name">法国文学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">WWG</div>
+                            <div class="subdiscipline-name">外国文学其他学科</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWA</div>
+                            <div class="subdiscipline-name">文学理论</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWB</div>
+                            <div class="subdiscipline-name">文艺美学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWC</div>
+                            <div class="subdiscipline-name">文学批评</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWD</div>
+                            <div class="subdiscipline-name">古代文学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWE</div>
+                            <div class="subdiscipline-name">近代文学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWF</div>
+                            <div class="subdiscipline-name">现代文学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWG</div>
+                            <div class="subdiscipline-name">各体文学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWH</div>
+                            <div class="subdiscipline-name">民间文学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWI</div>
+                            <div class="subdiscipline-name">儿童文学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWJ</div>
+                            <div class="subdiscipline-name">少数民族文学</div>
+                        </div>
+                        <div class="subdiscipline highlight">
+                            <div class="subdiscipline-code">ZWK</div>
+                            <div class="subdiscipline-name">中国文学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 新闻学与传播学 (XW) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>XW - 新闻学与传播学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">XWA</div>
+                            <div class="subdiscipline-name">新闻理论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">XWB</div>
+                            <div class="subdiscipline-name">新闻史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">XWC</div>
+                            <div class="subdiscipline-name">新闻业务</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">XWD</div>
+                            <div class="subdiscipline-name">新闻事业经营管理</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">XWE</div>
+                            <div class="subdiscipline-name">广播与电视</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">XWF</div>
+                            <div class="subdiscipline-name">传播学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">XWG</div>
+                            <div class="subdiscipline-name">新闻学与传播学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 语言学 (YY) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>YY - 语言学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">YYA</div>
+                            <div class="subdiscipline-name">普通语言学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">YYB</div>
+                            <div class="subdiscipline-name">比较语言学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">YYC</div>
+                            <div class="subdiscipline-name">语言地理学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">YYD</div>
+                            <div class="subdiscipline-name">社会语言学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">YYE</div>
+                            <div class="subdiscipline-name">心理语言学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">YYF</div>
+                            <div class="subdiscipline-name">应用语言学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">YYG</div>
+                            <div class="subdiscipline-name">汉语研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">YYH</div>
+                            <div class="subdiscipline-name">中国少数民族语言研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">YYI</div>
+                            <div class="subdiscipline-name">外国语言研究</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">YYJ</div>
+                            <div class="subdiscipline-name">语言学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 宗教学 (ZJ) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>ZJ - 宗教学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJA</div>
+                            <div class="subdiscipline-name">宗教学理论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJB</div>
+                            <div class="subdiscipline-name">无神论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJC</div>
+                            <div class="subdiscipline-name">原始宗教</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJD</div>
+                            <div class="subdiscipline-name">古代宗教</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJE</div>
+                            <div class="subdiscipline-name">佛教</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJF</div>
+                            <div class="subdiscipline-name">基督教</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJG</div>
+                            <div class="subdiscipline-name">伊斯兰教</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJH</div>
+                            <div class="subdiscipline-name">道教</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJI</div>
+                            <div class="subdiscipline-name">中国民间宗教与民间信仰</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJJ</div>
+                            <div class="subdiscipline-name">中国少数民族宗教</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJK</div>
+                            <div class="subdiscipline-name">当代宗教</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZJL</div>
+                            <div class="subdiscipline-name">宗教学其他学科</div>
+                        </div>
+                    </div>
+                </div>                
+
+                <!-- 哲学 (ZX) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>ZX - 哲学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content has-scrollbar">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZXA</div>
+                            <div class="subdiscipline-name">马克思主义哲学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZXB</div>
+                            <div class="subdiscipline-name">科学技术哲学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZXC</div>
+                            <div class="subdiscipline-name">中国哲学史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZXD</div>
+                            <div class="subdiscipline-name">东方哲学史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZXE</div>
+                            <div class="subdiscipline-name">西方哲学史</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZXF</div>
+                            <div class="subdiscipline-name">现代外国哲学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZXG</div>
+                            <div class="subdiscipline-name">逻辑学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZXH</div>
+                            <div class="subdiscipline-name">伦理学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZXI</div>
+                            <div class="subdiscipline-name">美学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZXJ</div>
+                            <div class="subdiscipline-name">哲学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 政治学 (ZZ) -->
+                <div class="discipline-group">
+                    <div class="discipline-header" onclick="toggleDiscipline(this)">
+                        <h4>ZZ - 政治学</h4>
+                        <span class="toggle-icon">›</span>
+                    </div>
+                    <div class="discipline-content">
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZZA</div>
+                            <div class="subdiscipline-name">政治学理论</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZZB</div>
+                            <div class="subdiscipline-name">政治制度</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZZC</div>
+                            <div class="subdiscipline-name">行政学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZZD</div>
+                            <div class="subdiscipline-name">国际政治学</div>
+                        </div>
+                        <div class="subdiscipline">
+                            <div class="subdiscipline-code">ZZE</div>
+                            <div class="subdiscipline-name">政治学其他学科</div>
+                        </div>
+                    </div>
+                </div>
+              </div>
+        </section>
+        
+        <section class="hot-papers-section">
+            <h3>热门论文</h3>
+            <style>
+                .hot-papers-section {
+                    margin-bottom: 40px;
+                }
+                
+                .paper-cards {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+                    gap: 20px;
+                }
+                
+                @media (max-width: 768px) {
+                    .paper-cards {
+                        grid-template-columns: 1fr;
+                    }
+                }
+                
+                .paper-card {
+                    background-color: white;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                    padding: 20px;
+                    transition: transform 0.3s, box-shadow 0.3s;
+                }
+                
+                .paper-card:hover {
+                    transform: translateY(-5px);
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                }
+                
+                .paper-title {
+                    font-size: 1.1rem;
+                    font-weight: bold;
+                    margin-bottom: 10px;
+                    color: var(--primary-color);
+                }
+                
+                .paper-authors {
+                    font-size: 0.95rem;
+                    margin-bottom: 8px;
+                }
+                
+                .paper-meta {
+                    font-size: 0.9rem;
+                    font-style: italic;
+                    color: #666;
+                    margin-bottom: 8px;
+                }
+                
+                .paper-categories {
+                    font-size: 0.9rem;
+                    color: #555;
+                }
+            </style>
+            <div class="paper-cards">
+                <div class="paper-card">
+                    <div class="paper-title">【CSArxiv模拟标题】中国乡村振兴战略下的农村社会治理创新研究</div>
+                    <div class="paper-authors">张伟, 李静, 王强</div>
+                    <div class="paper-meta">[政治学·行政学] 提交日期: 2023-06-15</div>
+                    <div class="paper-categories">分类号：D638；TP399-C2</div>
+                </div>
+                
+                <div class="paper-card">
+                    <div class="paper-title">【CSArxiv模拟标题】数字经济对传统制造业转型升级的影响机制分析</div>
+                    <div class="paper-authors">陈明, 刘芳</div>
+                    <div class="paper-meta">[经济学·应用经济学] 提交日期: 2023-06-14</div>
+                    <div class="paper-categories">分类号：F49；TP39</div>
+                </div>
+                
+                <div class="paper-card">
+                    <div class="paper-title">【CSArxiv模拟标题】新石器时代聚落形态的演变研究：基于黄河流域考古数据的分析</div>
+                    <div class="paper-authors">王小红, 赵亮, 孙伟</div>
+                    <div class="paper-meta">[考古学·考古学史] 提交日期: 2023-06-13</div>
+                    <div class="paper-categories">分类号：K871.13</div>
+                </div>
+                
+                <div class="paper-card">
+                    <div class="paper-title">【CSArxiv模拟标题】数字图书馆建设中的知识组织与信息服务创新</div>
+                    <div class="paper-authors">刘敏, 黄伟</div>
+                    <div class="paper-meta">[图书馆·情报与文献学] 提交日期: 2023-06-10</div>
+                    <div class="paper-categories">分类号：G250.7</div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-links">
+                <a href="#">关于我们</a>
+                <a href="#">使用条款</a>
+                <a href="#">隐私政策</a>
+                <a href="#">联系我们</a>
+                <a href="#">帮助中心</a>
+            </div>
+            <div class="footer-text">
+                <p>© 2025 CSarXiv.org - 中国社会科学预印本平台. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // 等待DOM加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            // 为每个学科组添加滚动条（如果子学科数量大于等于8）
+            document.querySelectorAll('.discipline-group').forEach(group => {
+                const content = group.querySelector('.discipline-content');
+                const subdisciplines = content.querySelectorAll('.subdiscipline');
+                
+                // 如果子学科数量大于等于8，添加scrollable类
+                if (subdisciplines.length >= 8) {
+                    content.classList.add('scrollable');
+                }
+                
+                // 初始化每个学科内容的实际高度
+                // 先设置为auto获取实际高度
+                content.style.height = 'auto';
+                
+                // 对于可滚动内容，我们设置最大高度而不是实际高度
+                if (content.classList.contains('scrollable')) {
+                    content.dataset.height = '354px';
+                } else {
+                    content.dataset.height = content.offsetHeight + 'px';
+                }
+                
+                // 再重置为0
+                if (!group.classList.contains('active')) {
+                    content.style.height = '0';
+                    content.style.opacity = '0';
+                }
+            });
+        });
+
+
+        function toggleDiscipline(element) {
+            const parent = element.parentNode;
+            
+            // 检查当前元素是否已激活
+            const isActive = parent.classList.contains('active');
+            
+            // 如果当前元素已激活，则取消激活（关闭）
+            if (isActive) {
+                parent.classList.remove('active');
+                const content = parent.querySelector('.discipline-content');
+                content.style.height = '0';
+                content.style.opacity = '0';
+            } 
+            // 如果当前元素未激活，则激活它（打开）
+            else {
+                parent.classList.add('active');
+                const content = parent.querySelector('.discipline-content');
+                content.style.height = content.dataset.height;
+                content.style.opacity = '1';
+            }
+        }
+    </script>
+</body>
+</html>
